@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/neu-ptv-admin/static/css/main.976239a1.css",
+    "main.js": "/neu-ptv-admin/static/js/main.97ebe474.js",
+    "index.html": "/neu-ptv-admin/index.html",
+    "main.976239a1.css.map": "/neu-ptv-admin/static/css/main.976239a1.css.map",
+    "main.97ebe474.js.map": "/neu-ptv-admin/static/js/main.97ebe474.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.976239a1.css",
+    "static/js/main.97ebe474.js"
+  ]
+}
