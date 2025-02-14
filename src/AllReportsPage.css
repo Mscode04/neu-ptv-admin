@@ -1,0 +1,206 @@
+/* AllReportsPage.css */
+
+/* Container styling */
+.AllRep-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: Arial, sans-serif;
+}
+
+/* Back button styling */
+.AllRep-container .btn-secondary {
+  background-color: #6c757d;
+  border: none;
+  padding: 8px 16px;
+  font-size: 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.AllRep-container .btn-secondary:hover {
+  background-color: #5a6268;
+}
+
+/* Heading styling */
+.AllRep-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+  font-size: 24px;
+}
+
+/* Filters container styling */
+.AllRep-container .row {
+  margin-bottom: 20px;
+}
+
+.AllRep-container .form-control {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+}
+
+.AllRep-container .form-control:focus {
+  border-color: #80bdff;
+  outline: none;
+  box-shadow: 0 0 5px rgba(128, 189, 255, 0.5);
+}
+
+/* Table styling */
+.AllRep-container .table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.AllRep-container .table th,
+.AllRep-container .table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.AllRep-container .table th {
+  background-color: #f8f9fa;
+  font-weight: bold;
+  color: #333;
+}
+
+.AllRep-container .table tbody tr:hover {
+  background-color: #f1f1f1;
+  cursor: pointer;
+}
+
+/* Delete button styling */
+.AllRep-container .btn-danger {
+  background-color: #dc3545;
+  border: none;
+  padding: 6px 12px;
+  font-size: 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.AllRep-container .btn-danger:hover {
+  background-color: #c82333;
+}
+
+/* Pagination styling */
+.AllRep-container .d-flex {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.AllRep-container .btn-primary {
+  background-color: #007bff;
+  border: none;
+  padding: 8px 16px;
+  font-size: 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin: 0 5px;
+}
+
+.AllRep-container .btn-primary:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.AllRep-container .btn-primary:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+/* Loading spinner styling */
+.AllRep-container .loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+.AllRep-container .loading-image {
+  width: 50px;
+  height: 50px;
+}
+
+/* Error message styling */
+.AllRep-container .text-danger {
+  color: #dc3545;
+  text-align: center;
+  margin-top: 20px;
+}
+
+/* No reports message styling */
+.AllRep-container .text-center {
+  text-align: center;
+  color: #666;
+  margin-top: 20px;
+}
+
+/* Confirmation box styling */
+.AllRep-confirmation-box {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  text-align: center;
+}
+
+.AllRep-confirmation-box p {
+  margin-bottom: 15px;
+  font-size: 16px;
+  color: #333;
+}
+
+.AllRep-confirmation-box .form-control {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+.AllRep-confirmation-box .btn {
+  padding: 8px 16px;
+  font-size: 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin: 0 5px;
+}
+
+.AllRep-confirmation-box .btn-danger {
+  background-color: #dc3545;
+  border: none;
+}
+
+.AllRep-confirmation-box .btn-danger:hover {
+  background-color: #c82333;
+}
+
+.AllRep-confirmation-box .btn-secondary {
+  background-color: #6c757d;
+  border: none;
+}
+
+.AllRep-confirmation-box .btn-secondary:hover {
+  background-color: #5a6268;
+}

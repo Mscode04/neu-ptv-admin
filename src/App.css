@@ -1,0 +1,16 @@
+.appbar {
+  background-color: #1976d2;
+}
+
+.icon {
+  margin-right: 10px;
+}
+
+.title {
+  flex-grow: 1;
+}
+
+.content {
+  margin-top: 20px;
+  padding: 20px;
+}
