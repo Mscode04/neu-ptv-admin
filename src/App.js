@@ -1,17 +1,51 @@
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import { AppBar, Toolbar, Typography, Button, Container } from "@mui/material";
-import { useState, useEffect } from "react";
-import MenuBookIcon from "@mui/icons-material/MenuBook";
-import AllReportsPage from "./AllReportsPage";
-import PatientTable from "./PatientTable";
-import UserSearchTable from "./UserSearchTable";
-import "./App.css";
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  Container,
+  TextField,
+  Box,
+  Modal,
+  Grid,
+} from '@mui/material';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  ResponsiveContainer,
+  Label,
+  Cell,
+} from 'recharts';
+import AllReportsPage from './AllReportsPage';
+import PatientTable from './PatientTable';
+import UserSearchTable from './UserSearchTable';
+import { db } from './Firebase/config';
+import { collection, getDocs } from 'firebase/firestore';
+import './App.css';
+import logo from './logo.png'; // Import your logo here
 
 function App() {
   const [installPrompt, setInstallPrompt] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [username, setUsername] = useState("");
+  const [openLoginModal, setOpenLoginModal] = useState(false);
+  const [chartData, setChartData] = useState([]);
+  const navigate = useNavigate();
 
-  // Listen for the `beforeinstallprompt` event
   useEffect(() => {
+    const savedUser = localStorage.getItem("user");
+    if (savedUser) {
+      setIsLoggedIn(true);
+      setUsername(savedUser);
+    }
+
     const handleBeforeInstallPrompt = (event) => {
       event.preventDefault();
       setInstallPrompt(event);
@@ -24,7 +58,23 @@ function App() {
     };
   }, []);
 
-  // Function to trigger the PWA installation prompt
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetchChartData();
+    }
+  }, [isLoggedIn]);
+
+  const fetchChartData = async () => {
+    const collections = ["Patients", "Reports", "users"];
+    const counts = await Promise.all(
+      collections.map(async (collectionName) => {
+        const snapshot = await getDocs(collection(db, collectionName));
+        return { name: collectionName, value: snapshot.size };
+      })
+    );
+    setChartData(counts);
+  };
+
   const handleInstallClick = () => {
     if (installPrompt) {
       installPrompt.prompt();
@@ -34,37 +84,142 @@ function App() {
         } else {
           console.log("User dismissed the install prompt");
         }
-        setInstallPrompt(null); // Clear the prompt after user choice
+        setInstallPrompt(null);
       });
     }
   };
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (username === "admin") {
+      localStorage.setItem("user", username);
+      setIsLoggedIn(true);
+      setOpenLoginModal(false);
+      navigate("/");
+    } else {
+      alert("Invalid username contact Neuraq");
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    setIsLoggedIn(false);
+    setUsername("");
+    navigate("/login");
+  };
+
+  const colors = ['#8884d8', '#82ca9d', '#ffc658']; // Colors for the bars
 
   return (
     <>
       <AppBar position="static" className="appbar">
         <Toolbar>
-          <MenuBookIcon className="icon" />
-          <Typography variant="h6" className="title">Dashboard</Typography>
-          <Button color="inherit" component={Link} to="/">Home</Button>
-          <Button color="inherit" component={Link} to="/reports">All Reports</Button>
-          <Button color="inherit" component={Link} to="/users">User Table</Button>
-          <Button color="inherit" component={Link} to="/patients">Patient Table</Button>
-          {/* {installPrompt && (
+          <img src={logo} alt="Logo" className="logo" /> {/* Add your logo here */}
+          <Typography variant="h6" className="title">
+            Admin DB
+          </Typography>
+          {isLoggedIn ? (
+            <>
+              <Button color="inherit" component={Link} to="/">
+                Home
+              </Button>
+              <Button color="inherit" component={Link} to="/reports">
+                Reports
+              </Button>
+              <Button color="inherit" component={Link} to="/users">
+                Users
+              </Button>
+              <Button color="inherit" component={Link} to="/patients">
+                Patients
+              </Button>
+              <Button color="inherit" onClick={handleLogout}>
+                Logout
+              </Button>
+            </>
+          ) : (
+            <Button color="inherit" onClick={() => setOpenLoginModal(true)}>
+              Login
+            </Button>
+          )}
+          {installPrompt && (
             <Button color="inherit" onClick={handleInstallClick}>
               Install App
             </Button>
-          )} */}
+          )}
         </Toolbar>
       </AppBar>
-      
-      <Container className="content">
+
+      <Container className="content" >
         <Routes>
-          <Route path="/reports" element={<AllReportsPage />} />
-          <Route path="/patients" element={<PatientTable />} />
-          <Route path="/users" element={<UserSearchTable />} />
-          <Route path="/" element={<h2>Welcome Neuraq Admin Palliative App</h2>} />
+          {isLoggedIn ? (
+            <>
+              <Route path="/reports" element={<AllReportsPage />} />
+              <Route path="/patients" element={<PatientTable />} />
+              <Route path="/users" element={<UserSearchTable />} />
+              <Route
+                path="/"
+                element={
+                  <>
+                    <Typography variant="h4" gutterBottom className="m-5">
+                      
+                      Welcome, Neuraq Admin For Palliative Makkaraparamab!
+                    </Typography>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={chartData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip />
+                        <Bar dataKey="value">
+                          {chartData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                    <Grid container spacing={2} justifyContent="center" style={{ marginTop: '20px' }}>
+                      <Grid item>
+                        <Button variant="contained" color="primary" component={Link} to="/reports">
+                          All Reports
+                        </Button>
+                      </Grid>
+                      <Grid item>
+                        <Button variant="contained" color="secondary" component={Link} to="/users">
+                          User Table
+                        </Button>
+                      </Grid>
+                      <Grid item>
+                        <Button variant="contained" color="success" component={Link} to="/patients">
+                          Patient Table
+                        </Button>
+                      </Grid>
+                    </Grid>
+                  </>
+                }
+              />
+            </>
+          ) : (
+            <Route path="*" element={<Typography variant="h5">Please log in.</Typography>} />
+          )}
         </Routes>
       </Container>
+
+      <Modal open={openLoginModal} onClose={() => setOpenLoginModal(false)}>
+        <Box className="login-modal" component="form" onSubmit={handleLogin}>
+          <Typography variant="h4">Login</Typography>
+          <TextField
+            label="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+            fullWidth
+            margin="normal"
+          />
+          <Button type="submit" variant="contained" color="primary">
+            Login
+          </Button>
+        </Box>
+      </Modal>
     </>
   );
 }

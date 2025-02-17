@@ -1,16 +1,34 @@
-.appbar {
-  background-color: #1976d2;
-}
-
-.icon {
+.logo {
+  height: 40px;
   margin-right: 10px;
 }
 
-.title {
-  flex-grow: 1;
+.login-modal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.5s;
 }
 
-.content {
-  margin-top: 20px;
-  padding: 20px;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.button-animation {
+  transition: transform 0.2s;
+}
+
+.button-animation:hover {
+  transform: scale(1.05);
 }

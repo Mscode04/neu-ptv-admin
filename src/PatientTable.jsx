@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { db } from "./Firebase/config"; // Adjust the path if necessary
-import { collection, getDocs, doc, deleteDoc } from "firebase/firestore";
-import "./PatientTable.css";
+import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
+import * as XLSX from "xlsx";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "./PatientTable.css";
 
 const PatientTable = () => {
   const [patients, setPatients] = useState([]);
@@ -14,11 +16,10 @@ const PatientTable = () => {
   const [sortOrder, setSortOrder] = useState("asc");
   const [sortBy, setSortBy] = useState("name");
   const [selectedStatus, setSelectedStatus] = useState("All");
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [pinInput, setPinInput] = useState("");
-  const [patientToDelete, setPatientToDelete] = useState(null);
-  const predefinedPin = "1234"; // Replace with a secure PIN
-  const patientsPerPage = 100;
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deletePin, setDeletePin] = useState("");
+  const [deleteId, setDeleteId] = useState(null);
+  const [patientsPerPage, setPatientsPerPage] = useState(30); // Default to 30 patients per page
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -42,6 +43,11 @@ const PatientTable = () => {
     fetchPatients();
   }, []);
 
+  const normalizeDiagnosis = (diagnosis) => {
+    if (!diagnosis) return [];
+    return diagnosis.split(",").map((d) => d.trim());
+  };
+
   useEffect(() => {
     let filtered = patients.filter((patient) => {
       const name = patient.name || "";
@@ -58,8 +64,9 @@ const PatientTable = () => {
         mainDiagnosis.toLowerCase().includes(searchQuery.toLowerCase()) ||
         registernumber.includes(searchQuery);
 
+      const normalizedDiagnosis = normalizeDiagnosis(mainDiagnosis);
       const matchesDiagnosis =
-        selectedDiagnosis === "All" || patient.mainDiagnosis === selectedDiagnosis;
+        selectedDiagnosis === "All" || normalizedDiagnosis.includes(selectedDiagnosis);
 
       const matchesStatus =
         selectedStatus === "All" ||
@@ -109,35 +116,12 @@ const PatientTable = () => {
 
   const uniqueDiagnoses = [
     "All",
-    ...new Set(patients.map((patient) => patient.mainDiagnosis).filter(Boolean)),
+    ...new Set(
+      patients
+        .flatMap((patient) => normalizeDiagnosis(patient.mainDiagnosis))
+        .filter(Boolean)
+    ),
   ];
-
-  const handleDelete = async (patientId) => {
-    if (pinInput === predefinedPin) {
-      try {
-        await deleteDoc(doc(db, "Patients", patientId));
-        setPatients(patients.filter((patient) => patient.id !== patientId));
-        setFilteredPatients(filteredPatients.filter((patient) => patient.id !== patientId));
-        setIsDeleteModalOpen(false);
-        setPinInput("");
-      } catch (error) {
-        console.error("Error deleting patient: ", error);
-      }
-    } else {
-      alert("Incorrect PIN. Deletion canceled.");
-      setIsDeleteModalOpen(false);
-      setPinInput("");
-    }
-  };
-
-  const handleDeleteClick = (patientId) => {
-    setPatientToDelete(patientId);
-    setIsDeleteModalOpen(true);
-  };
-
-  const handleCardClick = (patientId) => {
-    navigate(`/main/patient/${patientId}`);
-  };
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
@@ -151,75 +135,156 @@ const PatientTable = () => {
     }
   };
 
-  return (
-    <div className="PatientTable-container">
-    
+  const handleExportToExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(filteredPatients);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Patients");
+    XLSX.writeFile(workbook, "Patients.xlsx");
+  };
 
-      <div className="PatientTable-total-count">
-        Total Patients: {filteredPatients.length}
+  const handleDelete = async (id) => {
+    try {
+      await deleteDoc(doc(db, "Patients", id));
+      setPatients(patients.filter(patient => patient.id !== id));
+      setFilteredPatients(filteredPatients.filter(patient => patient.id !== id));
+      setConfirmDelete(false);
+    } catch (error) {
+      console.error("Error deleting patient: ", error);
+    }
+  };
+
+  const handleConfirmDelete = (id) => {
+    setConfirmDelete(true);
+    setDeleteId(id);
+  };
+
+  const handleCancelDelete = () => {
+    setConfirmDelete(false);
+    setDeleteId(null);
+  };
+
+  const handleDeletePinChange = (e) => {
+    setDeletePin(e.target.value);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (deletePin === "2012") {
+      handleDelete(deleteId);
+    } else {
+      alert("Incorrect PIN. Please try again.");
+      setDeletePin("");
+    }
+  };
+
+  const handlePatientsPerPageChange = (e) => {
+    setPatientsPerPage(parseInt(e.target.value, 10));
+    setCurrentPage(1); // Reset to the first page when changing the number of patients per page
+  };
+
+  return (
+    <div className=" mt-4">
+      <button className="btn btn-secondary mb-3" onClick={() => navigate(-1)}>
+        <i className="bi bi-arrow-left"></i> Back
+      </button>
+
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          Total Patients: {filteredPatients.length}
+        </div>
+        <button className="btn btn-success" onClick={handleExportToExcel}>
+          Export to Excel
+        </button>
       </div>
 
-      <div className="PatientTable-search-bar">
+      <div className="mb-3">
         <input
           type="text"
+          className="form-control"
           placeholder="Search by name, phone number, address, diagnosis, or register number..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
       </div>
 
-      <div className="PatientTable-filters">
-        <label>
-          Filter by Diagnosis:
-          <select value={selectedDiagnosis} onChange={(e) => setSelectedDiagnosis(e.target.value)}>
+      <div className="row mb-3">
+        <div className="col-md-3">
+          <label className="form-label">Filter by Diagnosis:</label>
+          <select
+            className="form-select"
+            value={selectedDiagnosis}
+            onChange={(e) => setSelectedDiagnosis(e.target.value)}
+          >
             {uniqueDiagnoses.map((diagnosis) => (
               <option key={diagnosis} value={diagnosis}>
                 {diagnosis}
               </option>
             ))}
           </select>
-        </label>
-
-        <label>
-          Filter by Status:
-          <select value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)}>
+        </div>
+        <div className="col-md-3">
+          <label className="form-label">Filter by Status:</label>
+          <select
+            className="form-select"
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(e.target.value)}
+          >
             <option value="All">All</option>
             <option value="Active">Active</option>
             <option value="Inactive">Inactive</option>
           </select>
-        </label>
-
-        <label>
-          Sort by:
-          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+        </div>
+        <div className="col-md-3">
+          <label className="form-label">Sort by:</label>
+          <select
+            className="form-select"
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+          >
             <option value="name">Name</option>
             <option value="registernumber">Register Number</option>
           </select>
-        </label>
-
-        <label>
-          Order:
-          <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
+        </div>
+        <div className="col-md-3">
+          <label className="form-label">Order:</label>
+          <select
+            className="form-select"
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value)}
+          >
             <option value="asc">Ascending</option>
             <option value="desc">Descending</option>
           </select>
-        </label>
+        </div>
+      </div>
+
+      <div className="row mb-3">
+        <div className="col-md-3">
+          <label className="form-label">Patients per Page:</label>
+          <select
+            className="form-select"
+            value={patientsPerPage}
+            onChange={handlePatientsPerPageChange}
+          >
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="30">30</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+        </div>
       </div>
 
       {isLoading ? (
-        <div className="PatientTable-loading-indicator">
-          <div className="loading-container">
-            <img
-              src="https://media.giphy.com/media/YMM6g7x45coCKdrDoj/giphy.gif"
-              alt="Loading..."
-              className="loading-image"
-            />
+        <div className="text-center">
+          <div className="spinner-border" role="status">
+            <span className="visually-hidden">Loading...</span>
           </div>
         </div>
       ) : (
         <>
-          <table className="PatientTable-table">
-            <thead>
+
+          <table className="table table-striped table-hover w-100">
+            <thead className="table-header">
               <tr>
                 <th>Register Number</th>
                 <th>Name</th>
@@ -227,88 +292,94 @@ const PatientTable = () => {
                 <th>Phone</th>
                 <th>Diagnosis</th>
                 <th>Status</th>
-                <th>Actions</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody>
-              {currentPatients.map((patient) => {
-                const is2012Patient = patient.registernumber && patient.registernumber.includes("/12");
-                return (
-                  <tr key={patient.id} onClick={() => handleCardClick(patient.id)}>
-                    <td>{patient.registernumber || "N/A"}</td>
-                    <td>{patient.name || "N/A"}</td>
-                    <td>{patient.address || "N/A"}</td>
-                    <td>{patient.mainCaretakerPhone || "N/A"}</td>
-                    <td>{patient.mainDiagnosis || "N/A"}</td>
-                    <td>
-                      <span
-                        style={{
-                          color: patient.deactivated ? "red" : "green",
-                        }}
-                      >
-                        {patient.deactivated ? "Inactive" : "Active"}
-                      </span>
-                    </td>
-                    <td>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteClick(patient.id);
-                        }}
-                        className="PatientTable-delete-button"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+              {currentPatients.map((patient) => (
+                <tr key={patient.id} style={{ cursor: "pointer" }} className={patient.deactivated ? "table-row-inactive" : "table-row-active"}>
+                  <td>{patient.registernumber || "N/A"}</td>
+                  <td>{patient.name || "N/A"}</td>
+                  <td>{patient.address || "N/A"}</td>
+                  <td>{patient.mainCaretakerPhone || "N/A"}</td>
+                  <td>{normalizeDiagnosis(patient.mainDiagnosis).join(", ") || "N/A"}</td>
+                  <td>
+                    <span
+                      style={{}}
+                    >
+                      {patient.deactivated ? "Inactive" : "Active"}
+                    </span>
+                  </td>
+                  <td>
+                    <button
+                      className="btn btn-danger"
+                      onClick={() => handleConfirmDelete(patient.id)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
 
-          <div className="PatientTable-pagination">
-            <button onClick={handlePreviousPage} disabled={currentPage === 1} className="PatientTable-pagination-btn">
+          {confirmDelete && (
+            <div className="modal" tabIndex="-1" role="dialog" style={{ display: "block" }}>
+              <div className="modal-dialog" role="document">
+                <div className="modal-content">
+                  <div className="modal-header">
+                    <h5 className="modal-title">Confirm Delete</h5>
+                  </div>
+                  <div className="modal-body">
+                    <p>Enter PIN to confirm deletion:</p>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={deletePin}
+                      onChange={handleDeletePinChange}
+                    />
+                  </div>
+                  <div className="modal-footer">
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={handleCancelDelete}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-danger"
+                      onClick={handleDeleteConfirm}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="d-flex justify-content-between align-items-center">
+            <button
+              className="btn btn-primary"
+              onClick={handlePreviousPage}
+              disabled={currentPage === 1}
+            >
               Previous
             </button>
             <span>
               Page {currentPage} of {totalPages}
             </span>
-            <button onClick={handleNextPage} disabled={currentPage === totalPages} className="PatientTable-pagination-btn">
+            <button
+              className="btn btn-primary"
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages}
+            >
               Next
             </button>
           </div>
         </>
-      )}
-
-      {isDeleteModalOpen && (
-        <div className="PatientTable-delete-modal">
-          <div className="PatientTable-delete-modal-content">
-            <h3>Confirm Deletion</h3>
-            <p>Enter the PIN to confirm deletion:</p>
-            <input
-              type="password"
-              value={pinInput}
-              onChange={(e) => setPinInput(e.target.value)}
-              placeholder="Enter PIN"
-            />
-            <div className="PatientTable-delete-modal-buttons">
-              <button
-                onClick={() => {
-                  setIsDeleteModalOpen(false);
-                  setPinInput("");
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleDelete(patientToDelete)}
-                className="PatientTable-delete-button"
-              >
-                Confirm Delete
-              </button>
-            </div>
-          </div>
-        </div>
       )}
     </div>
   );
