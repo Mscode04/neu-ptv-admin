@@ -1,14 +1,14 @@
 {
   "files": {
-    "main.css": "/neu-ptv-admin/static/css/main.44e3330e.css",
-    "main.js": "/neu-ptv-admin/static/js/main.f25d3376.js",
+    "main.css": "/neu-ptv-admin/static/css/main.81b51367.css",
+    "main.js": "/neu-ptv-admin/static/js/main.53640ce7.js",
     "static/media/logo.png": "/neu-ptv-admin/static/media/logo.2fd3be6a3b786e79cb80.png",
     "index.html": "/neu-ptv-admin/index.html",
-    "main.44e3330e.css.map": "/neu-ptv-admin/static/css/main.44e3330e.css.map",
-    "main.f25d3376.js.map": "/neu-ptv-admin/static/js/main.f25d3376.js.map"
+    "main.81b51367.css.map": "/neu-ptv-admin/static/css/main.81b51367.css.map",
+    "main.53640ce7.js.map": "/neu-ptv-admin/static/js/main.53640ce7.js.map"
   },
   "entrypoints": [
-    "static/css/main.44e3330e.css",
-    "static/js/main.f25d3376.js"
+    "static/css/main.81b51367.css",
+    "static/js/main.53640ce7.js"
   ]
 }
