@@ -1,0 +1,83 @@
+.LoginDataTable-container {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+  }
+  
+  .LoginDataTable-search {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+  }
+  
+  .LoginDataTable-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  
+  .LoginDataTable-table th,
+  .LoginDataTable-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .LoginDataTable-table th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+  }
+  
+  .LoginDataTable-table tbody tr:hover {
+    background-color: #f9f9f9;
+  }
+  
+  .nurse-status {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: bold;
+  }
+  
+  .nurse-true {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  .nurse-false {
+    background-color: #6c757d;
+    color: white;
+  }
+  
+  .status-indicator {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: bold;
+  }
+  
+  .status-green {
+    background-color: #28a745;
+    color: white;
+  }
+  
+  .status-red {
+    background-color: #dc3545;
+    color: white;
+  }
+  
+  .LoginDataTable-delete-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  
+  .LoginDataTable-delete-btn:hover {
+    background-color: #c82333;
+  }
