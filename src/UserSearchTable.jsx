@@ -121,6 +121,7 @@ const UserSearchTable = () => {
             <tr>
               <th>#</th> {/* Index column */}
               <th>Email</th>
+              <th>Password</th>
               <th>Patient ID</th>
               <th>Is Nurse</th>
               <th>Actions</th>
@@ -131,6 +132,7 @@ const UserSearchTable = () => {
               <tr key={user.id}>
                 <td>{index + 1}</td> {/* Index starts from 1 */}
                 <td>{user.email || "N/A"}</td>
+                <td>{user.password || "N/A"}</td>
                 <td>{user.patientId || "N/A"}</td>
                 <td>{user.is_nurse ? "Yes" : "No"}</td>
                 <td>
